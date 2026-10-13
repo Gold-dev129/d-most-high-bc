@@ -19,13 +19,14 @@ export const PAYMENT_STATUS = {
   REFUNDED: 'refunded',
 };
 
-export const DEFAULT_SHIPPING_FEE = 7000; // default in NGN
+export const DEFAULT_SHIPPING_FEE = 6000; // default in NGN (Outside Ibadan)
 export const DEFAULT_PAGE_LIMIT = 20;
 
 export const DELIVERY_FEES = {
-  ibadan: 6000,
-  lagos: 7000,
-  abuja: 8500,
+  ibadan: 4000,
+  outside_ibadan: 6000,
+  lagos: 6000,
+  abuja: 6000,
 };
 
 export const SERVICE_FEE = 1000;

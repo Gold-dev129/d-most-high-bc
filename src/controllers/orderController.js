@@ -99,15 +99,11 @@ export const checkout = async (req, res, next) => {
 
     // Step 2: Delivery fee by city, service fee & authoritative total calculation
     const cityKey = (customer.city || '').trim().toLowerCase();
-    let shippingFee = DEFAULT_SHIPPING_FEE;
-    if (cityKey === 'ibadan') {
-      shippingFee = DELIVERY_FEES.ibadan; // 6,000
-    } else if (cityKey === 'lagos') {
-      shippingFee = DELIVERY_FEES.lagos; // 7,000
-    } else if (cityKey === 'abuja') {
-      shippingFee = DELIVERY_FEES.abuja; // 8,500
-    } else if (DELIVERY_FEES[cityKey]) {
-      shippingFee = DELIVERY_FEES[cityKey];
+    let shippingFee = DEFAULT_SHIPPING_FEE; // 6,000 (Outside Ibadan default)
+    if (cityKey.includes('ibadan') && !cityKey.includes('outside')) {
+      shippingFee = DELIVERY_FEES.ibadan; // 4,000 for Ibadan
+    } else {
+      shippingFee = DELIVERY_FEES.outside_ibadan; // 6,000 for Outside Ibadan
     }
 
     const serviceFee = SERVICE_FEE; // 1,000
