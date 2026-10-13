@@ -1,35 +1,38 @@
 import mongoose from 'mongoose';
 
 export const connectDB = async () => {
-  const mongoURI = process.env.MONGODB_URI;
+  const rawMongoURI = process.env.MONGODB_URI;
 
-  if (!mongoURI) {
+  if (!rawMongoURI) {
     console.error('❌ MONGODB_URI is not defined in environment variables.');
     process.exit(1);
   }
 
-  const attemptConnect = async (retries = 3) => {
+  // Strip potential surrounding quotes if pasted into dashboard with quotes
+  const mongoURI = rawMongoURI.trim().replace(/^["']|["']$/g, '');
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const conn = await mongoose.connect(mongoURI, {
-        serverSelectionTimeoutMS: 3000,
-        connectTimeoutMS: 3000,
+        serverSelectionTimeoutMS: 15000,
+        connectTimeoutMS: 15000,
       });
       console.log(`✅ MongoDB Connected: ${conn.connection.host} [Database: ${conn.connection.name}]`);
+      return;
     } catch (error) {
-      console.error(`❌ MongoDB Connection Error: ${error.message}`);
-      if (retries > 0) {
-        console.log(`🔄 Retrying MongoDB connection in 2 seconds... (${retries} retries remaining)`);
-        setTimeout(() => attemptConnect(retries - 1), 2000);
+      console.error(`❌ MongoDB Connection Error (attempt ${attempt}/${maxRetries}): ${error.message}`);
+      if (attempt < maxRetries) {
+        console.log(`🔄 Retrying MongoDB connection in 3 seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('⚠️ Tip: Ensure MongoDB service is running or check internet connectivity to Atlas.');
-        }
         if (process.env.NODE_ENV === 'production') {
+          console.error('❌ Failed to connect to MongoDB after multiple attempts. Check Atlas Network Access (0.0.0.0/0).');
           process.exit(1);
+        } else {
+          console.warn('⚠️ Tip: Ensure MongoDB service is running or check internet connectivity to Atlas.');
         }
       }
     }
-  };
-
-  await attemptConnect();
+  }
 };
