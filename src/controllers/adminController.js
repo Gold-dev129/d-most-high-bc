@@ -263,10 +263,14 @@ export const updateOrderStatus = async (req, res, next) => {
       order.paidAt = new Date();
     }
 
-    const updatedOrder = await order.save();
+    await order.save();
+
+    const populatedOrder = await Order.findById(order._id)
+      .populate('user', 'name email phone address')
+      .populate('items.product', 'name slug images category');
 
     return sendSuccess(res, `Order status updated to "${normalizedStatus}".`, {
-      order: updatedOrder,
+      order: populatedOrder || order,
     });
   } catch (error) {
     next(error);
